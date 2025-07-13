@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'dart:convert';
+import 'package:get/get.dart';
+import '../Screens/Settings/settings_controller.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -7,18 +9,46 @@ class ApiService {
   ApiService._internal();
 
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: 'https://vedicscriptures.github.io',
+    baseUrl: 'https://api.bhagvatgeeta.ashutechline.com',
     connectTimeout: const Duration(seconds: 30),
     receiveTimeout: const Duration(seconds: 30),
   ));
 
+  // Test method to verify API connection
+  Future<void> testApiConnection() async {
+    try {
+      print('Testing API connection...');
+      final response = await _dio.get('/api/chapters');
+      print('Chapters API response: ${response.statusCode}');
+      print('Chapters data: ${response.data}');
+      
+      final versesResponse = await _dio.get('/api/chapters/1/verses');
+      print('Verses API response: ${versesResponse.statusCode}');
+      print('Verses data: ${versesResponse.data}');
+    } catch (e) {
+      print('API connection test failed: $e');
+    }
+  }
+
   // Get all chapters
   Future<List<Chapter>> getChapters() async {
     try {
-      final response = await _dio.get('/chapters');
+      final response = await _dio.get('/api/chapters');
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        return data.map((json) => Chapter.fromJson(Map<String, dynamic>.from(json))).toList();
+        final Map<String, dynamic> responseData = response.data;
+        
+        // Check if response has success and data fields
+        if (responseData['success'] == true && responseData['data'] != null) {
+          final List<dynamic> data = responseData['data'];
+          return data.map((json) => Chapter.fromJson(Map<String, dynamic>.from(json))).toList();
+        } else {
+          // Fallback: try to parse as direct array
+          if (response.data is List) {
+            final List<dynamic> data = response.data;
+            return data.map((json) => Chapter.fromJson(Map<String, dynamic>.from(json))).toList();
+          }
+          throw Exception('Invalid response format');
+        }
       }
       throw Exception('Failed to load chapters');
     } catch (e) {
@@ -26,36 +56,111 @@ class ApiService {
     }
   }
 
-  // Get all sloks for a chapter by looping through verses
+  // Get all sloks for a chapter
   Future<List<Slok>> getSloks(int chapterNumber) async {
     try {
-      List<Slok> sloks = [];
+      // Get the total verse count for this chapter first
+      final chaptersResponse = await _dio.get('/api/chapters');
+      int totalVerses = 0;
       
-      // Get the total number of verses for this chapter
-      final versesCount = _getChapterVersesCount(chapterNumber);
-      
-      // Loop through each verse in the chapter
-      for (int verseNumber = 1; verseNumber <= versesCount; verseNumber++) {
-        try {
-          final slokDetail = await getSlokDetail(chapterNumber, verseNumber);
-          sloks.add(Slok(
-            id: slokDetail.id,
-            chapterNumber: slokDetail.chapterNumber,
-            verseNumber: slokDetail.verseNumber,
-            text: slokDetail.text,
-            transliteration: slokDetail.transliteration,
-            wordMeanings: slokDetail.wordMeanings,
-            translation: slokDetail.translation,
-            purport: slokDetail.purport,
-          ));
-        } catch (e) {
-          print('Error fetching verse $verseNumber: $e');
-          // Continue with next verse even if one fails
+      if (chaptersResponse.statusCode == 200) {
+        final Map<String, dynamic> chaptersData = chaptersResponse.data;
+        if (chaptersData['success'] == true && chaptersData['data'] != null) {
+          final List<dynamic> chapters = chaptersData['data'];
+          final chapter = chapters.firstWhere(
+            (ch) => ch['chapter_number'] == chapterNumber,
+            orElse: () => null,
+          );
+          if (chapter != null) {
+            totalVerses = chapter['verses_count'] ?? 0;
+          }
         }
       }
       
-      return sloks;
+      print('Making API call to: /api/chapters/$chapterNumber/verses with count: $totalVerses');
+      
+      // Try different approaches to get all verses
+      List<Slok> allSloks = [];
+      
+      // Method 1: Try with query parameters
+      try {
+        final response = await _dio.get(
+          '/api/chapters/$chapterNumber/verses',
+          queryParameters: {
+            'count': totalVerses,
+            'limit': totalVerses,
+            'verses_count': totalVerses,
+            'all': true,
+          },
+        );
+        
+        print('Response status: ${response.statusCode}');
+        
+        if (response.statusCode == 200) {
+          print('API Response for chapter $chapterNumber: ${response.data}');
+          
+          // Handle different response formats
+          if (response.data is Map<String, dynamic>) {
+            final Map<String, dynamic> responseData = response.data;
+            
+            // Check if response has success and data fields
+            if (responseData['success'] == true && responseData['data'] != null) {
+              final List<dynamic> data = responseData['data'];
+              print('Found ${data.length} verses in chapter $chapterNumber');
+              allSloks = data.map((json) => Slok.fromJson(Map<String, dynamic>.from(json))).toList();
+            } else if (responseData['data'] != null) {
+              // Some APIs might not have success field
+              final List<dynamic> data = responseData['data'];
+              print('Found ${data.length} verses in chapter $chapterNumber (no success field)');
+              allSloks = data.map((json) => Slok.fromJson(Map<String, dynamic>.from(json))).toList();
+            }
+          }
+          
+          // Fallback: try to parse as direct array
+          if (response.data is List) {
+            final List<dynamic> data = response.data;
+            print('Found ${data.length} verses in chapter $chapterNumber (direct array)');
+            allSloks = data.map((json) => Slok.fromJson(Map<String, dynamic>.from(json))).toList();
+          }
+        }
+      } catch (e) {
+        print('Method 1 failed: $e');
+      }
+      
+      // Method 2: If we didn't get all verses, try without parameters
+      if (allSloks.length < totalVerses) {
+        try {
+          print('Trying without parameters to get all verses...');
+          final response = await _dio.get('/api/chapters/$chapterNumber/verses');
+          
+          if (response.statusCode == 200) {
+            if (response.data is Map<String, dynamic>) {
+              final Map<String, dynamic> responseData = response.data;
+              if (responseData['success'] == true && responseData['data'] != null) {
+                final List<dynamic> data = responseData['data'];
+                print('Found ${data.length} verses in chapter $chapterNumber (method 2)');
+                allSloks = data.map((json) => Slok.fromJson(Map<String, dynamic>.from(json))).toList();
+              }
+            } else if (response.data is List) {
+              final List<dynamic> data = response.data;
+              print('Found ${data.length} verses in chapter $chapterNumber (method 2, direct array)');
+              allSloks = data.map((json) => Slok.fromJson(Map<String, dynamic>.from(json))).toList();
+            }
+          }
+        } catch (e) {
+          print('Method 2 failed: $e');
+        }
+      }
+      
+      if (allSloks.isNotEmpty) {
+        print('Successfully loaded ${allSloks.length} verses for chapter $chapterNumber');
+        return allSloks;
+      }
+      
+      print('Failed to load any verses for chapter $chapterNumber');
+      throw Exception('Failed to load sloks - no verses found');
     } catch (e) {
+      print('Error loading sloks for chapter $chapterNumber: $e');
       throw Exception('Error: $e');
     }
   }
@@ -63,36 +168,34 @@ class ApiService {
   // Get specific slok details
   Future<SlokDetail> getSlokDetail(int chapterNumber, int slokNumber) async {
     try {
-      final response = await _dio.get('/slok/$chapterNumber/$slokNumber');
+      final response = await _dio.get('/api/verses/$chapterNumber/$slokNumber');
       if (response.statusCode == 200) {
-        final data = response.data;
+        final Map<String, dynamic> responseData = response.data;
         
-        if (data is Map) {
+        // Check if response has success and data fields
+        if (responseData['success'] == true && responseData['data'] != null) {
+          final data = responseData['data'];
           return SlokDetail.fromJson(Map<String, dynamic>.from(data));
-        } else if (data is String) {
-          try {
-            final parsed = Map<String, dynamic>.from(jsonDecode(data));
-            return SlokDetail.fromJson(parsed);
-          } catch (e) {
-            throw Exception('Failed to parse string response: $e');
-          }
         } else {
-          throw Exception('Unexpected response format: ${data.runtimeType}');
+          // Fallback: try to parse as direct object
+          if (response.data is Map) {
+            return SlokDetail.fromJson(Map<String, dynamic>.from(response.data));
+          } else if (response.data is String) {
+            try {
+              final parsed = Map<String, dynamic>.from(jsonDecode(response.data));
+              return SlokDetail.fromJson(parsed);
+            } catch (e) {
+              throw Exception('Failed to parse string response: $e');
+            }
+          } else {
+            throw Exception('Unexpected response format: ${response.data.runtimeType}');
+          }
         }
       }
       throw Exception('Failed to load slok details');
     } catch (e) {
       throw Exception('Error: $e');
     }
-  }
-
-  // Helper method to get verse count for each chapter
-  int _getChapterVersesCount(int chapterNumber) {
-    final Map<int, int> chapterVerses = {
-      1: 47, 2: 72, 3: 43, 4: 42, 5: 29, 6: 47, 7: 30, 8: 28, 9: 34, 10: 42,
-      11: 55, 12: 20, 13: 35, 14: 27, 15: 20, 16: 24, 17: 28, 18: 78
-    };
-    return chapterVerses[chapterNumber] ?? 0;
   }
 }
 
@@ -102,16 +205,22 @@ class Chapter {
   final String name;
   final String translation;
   final String transliteration;
-  final Map<String, String> meaning;
-  final Map<String, String> summary;
+  final String meaningEn;
+  final String meaningHi;
+  final String summaryEn;
+  final String summaryHi;
+  final int versesCount;
 
   Chapter({
     required this.chapterNumber,
     required this.name,
     required this.translation,
     required this.transliteration,
-    required this.meaning,
-    required this.summary,
+    required this.meaningEn,
+    required this.meaningHi,
+    required this.summaryEn,
+    required this.summaryHi,
+    required this.versesCount,
   });
 
   factory Chapter.fromJson(Map<String, dynamic> json) {
@@ -120,8 +229,11 @@ class Chapter {
       name: json['name'] ?? '',
       translation: json['translation'] ?? '',
       transliteration: json['transliteration'] ?? '',
-      meaning: _convertToStringMap(json['meaning']),
-      summary: _convertToStringMap(json['summary']),
+      meaningEn: json['meaning_en'] ?? '',
+      meaningHi: json['meaning_hi'] ?? '',
+      summaryEn: json['summary_en'] ?? '',
+      summaryHi: json['summary_hi'] ?? '',
+      versesCount: _parseInt(json['verses_count']) ?? 0,
     );
   }
 
@@ -139,26 +251,15 @@ class Chapter {
     return null;
   }
 
-  // Helper method to convert dynamic map to string map
-  static Map<String, String> _convertToStringMap(dynamic map) {
-    if (map is Map) {
-      return Map<String, String>.from(map.map((key, value) => 
-        MapEntry(key.toString(), value.toString())));
+  // Getter for name meaning based on language
+  String get nameMeaning {
+    final settingsController = Get.find<SettingsController>();
+    if (settingsController.selectedLanguage.value == 'english') {
+      return meaningEn.isNotEmpty ? meaningEn : name;
+    } else {
+      return meaningHi.isNotEmpty ? meaningHi : name;
     }
-    return {};
   }
-
-  // Getter for verses count
-  int get versesCount {
-    final Map<int, int> chapterVerses = {
-      1: 47, 2: 72, 3: 43, 4: 42, 5: 29, 6: 47, 7: 30, 8: 28, 9: 34, 10: 42,
-      11: 55, 12: 20, 13: 35, 14: 27, 15: 20, 16: 24, 17: 28, 18: 78
-    };
-    return chapterVerses[chapterNumber] ?? 0;
-  }
-
-  // Getter for name meaning
-  String get nameMeaning => meaning['en'] ?? meaning['hi'] ?? '';
 
   // Getter for name translated
   String get nameTranslated => translation;
@@ -176,6 +277,10 @@ class Slok {
   final String wordMeanings;
   final String translation;
   final String purport;
+  final String? textHindi;
+  final String? textEnglish;
+  final String? translationHindi;
+  final String? translationEnglish;
 
   Slok({
     required this.id,
@@ -186,6 +291,10 @@ class Slok {
     required this.wordMeanings,
     required this.translation,
     required this.purport,
+    this.textHindi,
+    this.textEnglish,
+    this.translationHindi,
+    this.translationEnglish,
   });
 
   factory Slok.fromJson(Map<String, dynamic> json) {
@@ -193,11 +302,15 @@ class Slok {
       id: _parseInt(json['id']) ?? _parseInt(json['verse_number']) ?? 0,
       chapterNumber: _parseInt(json['chapter_number']) ?? 0,
       verseNumber: _parseInt(json['verse_number']) ?? 0,
-      text: json['text'] ?? json['slok'] ?? '',
+      text: json['slok'] ?? json['text'] ?? json['verse'] ?? '',
       transliteration: json['transliteration'] ?? '',
       wordMeanings: json['word_meanings'] ?? '',
       translation: json['translation'] ?? '',
       purport: json['purport'] ?? '',
+      textHindi: json['text_hindi'],
+      textEnglish: json['text_english'],
+      translationHindi: json['translation_hindi'],
+      translationEnglish: json['translation_english'],
     );
   }
 
@@ -214,6 +327,26 @@ class Slok {
     }
     return null;
   }
+
+  // Getter for text based on language
+  String get displayText {
+    final settingsController = Get.find<SettingsController>();
+    if (settingsController.selectedLanguage.value == 'english') {
+      return textEnglish ?? text;
+    } else {
+      return textHindi ?? text;
+    }
+  }
+
+  // Getter for translation based on language
+  String get displayTranslation {
+    final settingsController = Get.find<SettingsController>();
+    if (settingsController.selectedLanguage.value == 'english') {
+      return translationEnglish ?? translation;
+    } else {
+      return translationHindi ?? translation;
+    }
+  }
 }
 
 class SlokDetail {
@@ -226,6 +359,10 @@ class SlokDetail {
   final String translation;
   final String purport;
   final Map<String, dynamic> commentaries;
+  final String? textHindi;
+  final String? textEnglish;
+  final String? translationHindi;
+  final String? translationEnglish;
 
   SlokDetail({
     required this.id,
@@ -237,6 +374,10 @@ class SlokDetail {
     required this.translation,
     required this.purport,
     required this.commentaries,
+    this.textHindi,
+    this.textEnglish,
+    this.translationHindi,
+    this.translationEnglish,
   });
 
   factory SlokDetail.fromJson(Map<String, dynamic> json) {
@@ -250,6 +391,10 @@ class SlokDetail {
       translation: _extractTranslation(json),
       purport: _extractPurport(json),
       commentaries: Map<String, dynamic>.from(json),
+      textHindi: json['text_hindi'],
+      textEnglish: json['text_english'],
+      translationHindi: json['translation_hindi'],
+      translationEnglish: json['translation_english'],
     );
   }
 
@@ -277,5 +422,25 @@ class SlokDetail {
   static String _extractPurport(Map<String, dynamic> json) {
     // This will be handled by SettingsController
     return '';
+  }
+
+  // Getter for text based on language
+  String get displayText {
+    final settingsController = Get.find<SettingsController>();
+    if (settingsController.selectedLanguage.value == 'english') {
+      return textEnglish ?? text;
+    } else {
+      return textHindi ?? text;
+    }
+  }
+
+  // Getter for translation based on language
+  String get displayTranslation {
+    final settingsController = Get.find<SettingsController>();
+    if (settingsController.selectedLanguage.value == 'english') {
+      return translationEnglish ?? translation;
+    } else {
+      return translationHindi ?? translation;
+    }
   }
 } 

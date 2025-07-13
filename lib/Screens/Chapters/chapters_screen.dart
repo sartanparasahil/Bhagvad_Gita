@@ -5,6 +5,7 @@ import '../../utils/app_theme.dart';
 import '../../widgets/loading_widget.dart';
 import '../../widgets/error_widget.dart';
 import '../../services/api_service.dart';
+import '../Settings/settings_controller.dart';
 
 class ChaptersScreen extends StatelessWidget {
   const ChaptersScreen({Key? key}) : super(key: key);
@@ -12,10 +13,43 @@ class ChaptersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ChaptersController controller = Get.put(ChaptersController());
+    final SettingsController settingsController = Get.find<SettingsController>();
+
+    String getTitle() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Chapters of Bhagavad Gita';
+      } else {
+        return 'भगवद्गीता के अध्याय';
+      }
+    }
+
+    String getLoadingMessage() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Loading chapters...';
+      } else {
+        return 'अध्याय लोड हो रहे हैं...';
+      }
+    }
+
+    String getNoChaptersMessage() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'No chapters found';
+      } else {
+        return 'कोई अध्याय नहीं मिला';
+      }
+    }
+
+    String getVersesText() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'verses';
+      } else {
+        return 'श्लोक';
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('भगवद्गीता के अध्याय'),
+        title: Text(getTitle()),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -25,7 +59,7 @@ class ChaptersScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const LoadingWidget(message: 'अध्याय लोड हो रहे हैं...');
+          return LoadingWidget(message: getLoadingMessage());
         }
 
         if (controller.errorMessage.isNotEmpty) {
@@ -36,8 +70,8 @@ class ChaptersScreen extends StatelessWidget {
         }
 
         if (controller.chapters.isEmpty) {
-          return const CustomErrorWidget(
-            message: 'कोई अध्याय नहीं मिला',
+          return CustomErrorWidget(
+            message: getNoChaptersMessage(),
           );
         }
 
@@ -62,7 +96,7 @@ class ChaptersScreen extends StatelessWidget {
               itemCount: controller.chapters.length,
               itemBuilder: (context, index) {
                 final chapter = controller.chapters[index];
-                return ChapterCard(chapter: chapter);
+                return ChapterCard(chapter: chapter, versesText: getVersesText());
               },
             ),
           ),
@@ -74,8 +108,9 @@ class ChaptersScreen extends StatelessWidget {
 
 class ChapterCard extends StatelessWidget {
   final Chapter chapter;
+  final String versesText;
 
-  const ChapterCard({Key? key, required this.chapter}) : super(key: key);
+  const ChapterCard({Key? key, required this.chapter, required this.versesText}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +146,7 @@ class ChapterCard extends StatelessWidget {
               const SizedBox(height: 8), // Reduced spacing
               Flexible(
                 child: Text(
-                  chapter.name,
+                  chapter.nameMeaning,
                   style: AppTheme.chapterTitleStyle.copyWith(
                     color: AppTheme.pureWhite,
                     fontSize: 14, // Reduced font size
@@ -142,7 +177,7 @@ class ChapterCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8), // Reduced radius
                 ),
                 child: Text(
-                  '${chapter.versesCount} श्लोक',
+                  '${chapter.versesCount} $versesText',
                   style: AppTheme.meaningTextStyle.copyWith(
                     color: AppTheme.pureWhite,
                     fontSize: 8, // Reduced font size

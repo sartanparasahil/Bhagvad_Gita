@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../utils/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../Settings/settings_controller.dart';
 import '../Settings/settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -9,6 +10,72 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final SettingsController settingsController = Get.find<SettingsController>();
+
+    String getAppTitle() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Bhagavad Gita';
+      } else {
+        return 'भगवद्गीता';
+      }
+    }
+
+    String getSubtitle() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'The Song of God';
+      } else {
+        return 'The Song of God';
+      }
+    }
+
+    String getWelcomeTitle() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Ocean of Knowledge';
+      } else {
+        return 'ज्ञान का सागर';
+      }
+    }
+
+    String getWelcomeMessage() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'The Bhagavad Gita contains 18 chapters and 700 verses. Each chapter illuminates different aspects of life.';
+      } else {
+        return 'भगवद्गीता में 18 अध्याय और 700 श्लोक हैं। प्रत्येक अध्याय जीवन के विभिन्न पहलुओं पर प्रकाश डालता है।';
+      }
+    }
+
+    String getStartReadingText() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Start Reading Chapters';
+      } else {
+        return 'अध्याय पढ़ना शुरू करें';
+      }
+    }
+
+    String getChaptersText() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Chapters';
+      } else {
+        return 'अध्याय';
+      }
+    }
+
+    String getVersesText() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Verses';
+      } else {
+        return 'श्लोक';
+      }
+    }
+
+    String getWisdomText() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Wisdom';
+      } else {
+        return 'ज्ञान';
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -29,129 +96,133 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // App Logo/Icon
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    gradient: AppTheme.sacredGradient,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primarySaffron.withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.auto_stories,
-                    size: 60,
-                    color: AppTheme.pureWhite,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                
-                // App Title
-                Text(
-                  'भगवद्गीता',
-                  style: GoogleFonts.poppins(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.darkBrown,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                
-                Text(
-                  'The Song of God',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.spiritualBlue,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 48),
-                
-                // Welcome Message
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: AppTheme.cardDecoration,
-                  child: Column(
-                    children: [
-                      Text(
-                        'ज्ञान का सागर',
-                        style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.spiritualBlue,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  
+                  // App Logo/Icon
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.sacredGradient,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primarySaffron.withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'भगवद्गीता में 18 अध्याय और 700 श्लोक हैं। प्रत्येक अध्याय जीवन के विभिन्न पहलुओं पर प्रकाश डालता है।',
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.auto_stories,
+                      size: 60,
+                      color: AppTheme.pureWhite,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  // App Title
+                  Obx(() => Text(
+                    getAppTitle(),
+                    style: GoogleFonts.poppins(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.darkBrown,
+                    ),
+                    textAlign: TextAlign.center,
+                  )),
+                  const SizedBox(height: 8),
+                  
+                  Text(
+                    getSubtitle(),
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.spiritualBlue,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  // Welcome Message
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: AppTheme.cardDecoration,
+                    child: Column(
+                      children: [
+                        Obx(() => Text(
+                          getWelcomeTitle(),
+                          style: GoogleFonts.poppins(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.spiritualBlue,
+                          ),
+                          textAlign: TextAlign.center,
+                        )),
+                        const SizedBox(height: 12),
+                        Obx(() => Text(
+                          getWelcomeMessage(),
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                            color: AppTheme.darkBrown,
+                            height: 1.6,
+                          ),
+                          textAlign: TextAlign.center,
+                        )),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  // Start Reading Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Get.toNamed('/chapters');
+                      },
+                      icon: const Icon(Icons.menu_book, size: 24),
+                      label: Obx(() => Text(
+                        getStartReadingText(),
                         style: GoogleFonts.poppins(
                           fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                          color: AppTheme.darkBrown,
-                          height: 1.6,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.pureWhite,
                         ),
-                        textAlign: TextAlign.center,
+                      )),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primarySaffron,
+                        foregroundColor: AppTheme.pureWhite,
+                        elevation: 8,
+                        shadowColor: AppTheme.primarySaffron.withOpacity(0.3),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Quick Info
+                  Obx(() => Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildInfoCard('18', getChaptersText(), Icons.book),
+                      _buildInfoCard('700', getVersesText(), Icons.auto_stories),
+                      _buildInfoCard('1', getWisdomText(), Icons.lightbulb),
                     ],
-                  ),
-                ),
-                const SizedBox(height: 48),
-                
-                // Start Reading Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Get.toNamed('/chapters');
-                    },
-                    icon: const Icon(Icons.menu_book, size: 24),
-                    label: Text(
-                      'अध्याय पढ़ना शुरू करें',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.pureWhite,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primarySaffron,
-                      foregroundColor: AppTheme.pureWhite,
-                      elevation: 8,
-                      shadowColor: AppTheme.primarySaffron.withOpacity(0.3),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                
-                // Quick Info
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildInfoCard('18', 'अध्याय', Icons.book),
-                    _buildInfoCard('700', 'श्लोक', Icons.auto_stories),
-                    _buildInfoCard('1', 'ज्ञान', Icons.lightbulb),
-                  ],
-                ),
-              ],
+                  )),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),

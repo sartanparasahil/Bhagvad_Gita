@@ -5,6 +5,7 @@ import '../../utils/app_theme.dart';
 import '../../widgets/loading_widget.dart';
 import '../../widgets/error_widget.dart';
 import '../../services/api_service.dart';
+import '../Settings/settings_controller.dart';
 
 class SloksScreen extends StatelessWidget {
   const SloksScreen({Key? key}) : super(key: key);
@@ -12,6 +13,7 @@ class SloksScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SloksController controller = Get.put(SloksController());
+    final SettingsController settingsController = Get.find<SettingsController>();
     final Map<String, dynamic> arguments = Get.arguments ?? {};
     final Chapter chapter = arguments['chapter'];
 
@@ -20,9 +22,41 @@ class SloksScreen extends StatelessWidget {
       controller.fetchSloks(chapter.id);
     });
 
+    String getTitle() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Chapter ${chapter.id}: ${chapter.nameMeaning}';
+      } else {
+        return 'अध्याय ${chapter.id}: ${chapter.nameMeaning}';
+      }
+    }
+
+    String getLoadingMessage() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Loading verses...';
+      } else {
+        return 'श्लोक लोड हो रहे हैं...';
+      }
+    }
+
+    String getNoSloksMessage() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'No verses found';
+      } else {
+        return 'कोई श्लोक नहीं मिला';
+      }
+    }
+
+    String getVerseText() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Verse';
+      } else {
+        return 'श्लोक';
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('अध्याय ${chapter.id}: ${chapter.name}'),
+        title: Text(getTitle()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Get.back(),
@@ -36,7 +70,7 @@ class SloksScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const LoadingWidget(message: 'श्लोक लोड हो रहे हैं...');
+          return LoadingWidget(message: getLoadingMessage());
         }
 
         if (controller.errorMessage.isNotEmpty) {
@@ -47,8 +81,8 @@ class SloksScreen extends StatelessWidget {
         }
 
         if (controller.sloks.isEmpty) {
-          return const CustomErrorWidget(
-            message: 'कोई श्लोक नहीं मिला',
+          return CustomErrorWidget(
+            message: getNoSloksMessage(),
           );
         }
 
@@ -67,7 +101,11 @@ class SloksScreen extends StatelessWidget {
               itemCount: controller.sloks.length,
               itemBuilder: (context, index) {
                 final slok = controller.sloks[index];
-                return SlokCard(slok: slok, chapter: chapter);
+                return SlokCard(
+                  slok: slok, 
+                  chapter: chapter, 
+                  verseText: getVerseText()
+                );
               },
             ),
           ),
@@ -80,11 +118,13 @@ class SloksScreen extends StatelessWidget {
 class SlokCard extends StatelessWidget {
   final Slok slok;
   final Chapter chapter;
+  final String verseText;
 
   const SlokCard({
     Key? key,
     required this.slok,
     required this.chapter,
+    required this.verseText,
   }) : super(key: key);
 
   @override
@@ -114,7 +154,7 @@ class SlokCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      'श्लोक ${slok.verseNumber}',
+                      '$verseText ${slok.verseNumber}',
                       style: AppTheme.meaningTextStyle.copyWith(
                         color: AppTheme.pureWhite,
                         fontSize: 12,
@@ -131,7 +171,7 @@ class SlokCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                slok.text,
+                slok.displayText,
                 style: AppTheme.sanskritTextStyle.copyWith(
                   fontSize: 16,
                   height: 1.6,
@@ -166,7 +206,7 @@ class SlokCard extends StatelessWidget {
                   ),
                 ),
               ],
-              if (slok.translation.isNotEmpty) ...[
+              if (slok.displayTranslation.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.all(8),
@@ -175,7 +215,7 @@ class SlokCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    slok.translation,
+                    slok.displayTranslation,
                     style: AppTheme.meaningTextStyle.copyWith(
                       fontSize: 12,
                       color: AppTheme.spiritualBlue,

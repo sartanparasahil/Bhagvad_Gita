@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import '../services/api_service.dart';
+import '../Screens/Settings/settings_controller.dart';
 
 class SlokDetailController extends GetxController {
   final ApiService _apiService = ApiService();
@@ -11,6 +12,15 @@ class SlokDetailController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    
+    // Listen to language changes
+    final settingsController = Get.find<SettingsController>();
+    ever(settingsController.selectedLanguage, (_) {
+      // Refresh slok detail when language changes to update display text
+      if (slokDetail.value != null) {
+        slokDetail.refresh();
+      }
+    });
   }
 
   Future<void> fetchSlokDetail(int chapterNumber, int slokNumber) async {

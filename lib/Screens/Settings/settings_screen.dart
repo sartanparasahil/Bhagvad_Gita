@@ -11,16 +11,88 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String getTitle() {
+      if (controller.selectedLanguage.value == 'english') {
+        return 'Settings';
+      } else {
+        return 'सेटिंग्स';
+      }
+    }
+
+    String getAppSettingsText() {
+      if (controller.selectedLanguage.value == 'english') {
+        return 'App Settings';
+      } else {
+        return 'ऐप सेटिंग्स';
+      }
+    }
+
+    String getLanguageText() {
+      if (controller.selectedLanguage.value == 'english') {
+        return 'Language';
+      } else {
+        return 'भाषा';
+      }
+    }
+
+    String getLanguageSubtitle() {
+      if (controller.selectedLanguage.value == 'english') {
+        return 'Choose your preferred language';
+      } else {
+        return 'अपनी पसंदीदा भाषा चुनें';
+      }
+    }
+
+    String getAboutText() {
+      if (controller.selectedLanguage.value == 'english') {
+        return 'About';
+      } else {
+        return 'के बारे में';
+      }
+    }
+
+    String getAboutSubtitle() {
+      if (controller.selectedLanguage.value == 'english') {
+        return 'App information';
+      } else {
+        return 'ऐप की जानकारी';
+      }
+    }
+
+    String getAppVersionText() {
+      if (controller.selectedLanguage.value == 'english') {
+        return 'App Version';
+      } else {
+        return 'ऐप संस्करण';
+      }
+    }
+
+    String getDeveloperText() {
+      if (controller.selectedLanguage.value == 'english') {
+        return 'Developer';
+      } else {
+        return 'डेवलपर';
+      }
+    }
+
+    String getApiSourceText() {
+      if (controller.selectedLanguage.value == 'english') {
+        return 'API Source';
+      } else {
+        return 'एपीआई स्रोत';
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Settings',
+        title: Obx(() => Text(
+          getTitle(),
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
-        ),
+        )),
         backgroundColor: AppTheme.primarySaffron,
         elevation: 0,
         leading: IconButton(
@@ -58,23 +130,23 @@ class SettingsScreen extends StatelessWidget {
                         size: 30,
                       ),
                       SizedBox(width: 15),
-                      Text(
-                        'App Settings',
+                      Obx(() => Text(
+                        getAppSettingsText(),
                         style: TextStyle(
                           color: AppTheme.darkBrown,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
-                      ),
+                      )),
                     ],
                   ),
                 ),
                 SizedBox(height: 30),
 
                 // Language Settings
-                _buildSettingsCard(
-                  title: 'Language',
-                  subtitle: 'Choose your preferred language',
+                Obx(() => _buildSettingsCard(
+                  title: getLanguageText(),
+                  subtitle: getLanguageSubtitle(),
                   icon: Icons.language,
                   child: Column(
                     children: [
@@ -93,24 +165,22 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
+                )),
                 SizedBox(height: 20),
 
-
-
                 // About Section
-                _buildSettingsCard(
-                  title: 'About',
-                  subtitle: 'App information',
+                Obx(() => _buildSettingsCard(
+                  title: getAboutText(),
+                  subtitle: getAboutSubtitle(),
                   icon: Icons.info,
                   child: Column(
                     children: [
-                      _buildInfoRow('App Version', '1.0.0'),
-                      _buildInfoRow('Developer', 'Bhagavad Gita App'),
-                      _buildInfoRow('API Source', 'Vedic Scriptures'),
+                      _buildInfoRow(getAppVersionText(), '1.0.0'),
+                      _buildInfoRow(getDeveloperText(), 'Bhagavad Gita App'),
+                      _buildInfoRow(getApiSourceText(), 'Vedic Scriptures'),
                     ],
                   ),
-                ),
+                )),
                 SizedBox(height: 30), // Extra space at bottom
               ],
             ),
@@ -240,8 +310,6 @@ class SettingsScreen extends StatelessWidget {
       ),
     ));
   }
-
-  
 
   Widget _buildInfoRow(String label, String value) {
     return Padding(

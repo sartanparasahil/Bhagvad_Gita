@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:get/get.dart';
 import '../utils/app_theme.dart';
+import '../Screens/Settings/settings_controller.dart';
 
 class LoadingWidget extends StatelessWidget {
   final String? message;
@@ -9,6 +11,18 @@ class LoadingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settingsController = Get.find<SettingsController>();
+    
+    String getLoadingMessage() {
+      if (message != null) return message!;
+      
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Loading...';
+      } else {
+        return 'लोड हो रहा है...';
+      }
+    }
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -32,15 +46,14 @@ class LoadingWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          if (message != null)
-            Text(
-              message!,
-              style: AppTheme.meaningTextStyle.copyWith(
-                fontSize: 16,
-                color: AppTheme.darkBrown,
-              ),
-              textAlign: TextAlign.center,
+          Text(
+            getLoadingMessage(),
+            style: AppTheme.meaningTextStyle.copyWith(
+              fontSize: 16,
+              color: AppTheme.darkBrown,
             ),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 16),
           SizedBox(
             width: 40,

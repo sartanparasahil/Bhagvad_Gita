@@ -23,9 +23,65 @@ class SlokDetailScreen extends StatelessWidget {
       controller.fetchSlokDetail(slok.chapterNumber, slok.verseNumber);
     });
 
+    String getTitle() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Verse ${slok.verseNumber}';
+      } else {
+        return 'श्लोक ${slok.verseNumber}';
+      }
+    }
+
+    String getLoadingMessage() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Loading verse details...';
+      } else {
+        return 'श्लोक का विवरण लोड हो रहा है...';
+      }
+    }
+
+    String getNoDetailMessage() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Verse details not found';
+      } else {
+        return 'श्लोक का विवरण नहीं मिला';
+      }
+    }
+
+    String getChapterVerseText() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Chapter ${chapter.id} - Verse ${slok.verseNumber}';
+      } else {
+        return 'अध्याय ${chapter.id} - श्लोक ${slok.verseNumber}';
+      }
+    }
+
+    String getSanskritTextTitle() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Sanskrit Verse';
+      } else {
+        return 'संस्कृत श्लोक';
+      }
+    }
+
+    String getTransliterationTitle() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Transliteration';
+      } else {
+        return 'उच्चारण';
+      }
+    }
+
+    String getWordMeaningsTitle() {
+      if (settingsController.selectedLanguage.value == 'english') {
+        return 'Word Meanings';
+      } else {
+        return 'शब्दार्थ';
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('श्लोक ${slok.verseNumber}'),
+        title: Text(getTitle()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Get.back(),
@@ -39,7 +95,7 @@ class SlokDetailScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const LoadingWidget(message: 'श्लोक का विवरण लोड हो रहा है...');
+          return LoadingWidget(message: getLoadingMessage());
         }
 
         if (controller.errorMessage.isNotEmpty) {
@@ -50,8 +106,8 @@ class SlokDetailScreen extends StatelessWidget {
         }
 
         if (controller.slokDetail.value == null) {
-          return const CustomErrorWidget(
-            message: 'श्लोक का विवरण नहीं मिला',
+          return CustomErrorWidget(
+            message: getNoDetailMessage(),
           );
         }
 
@@ -82,7 +138,7 @@ class SlokDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          'अध्याय ${chapter.id} - श्लोक ${slokDetail.verseNumber}',
+                          getChapterVerseText(),
                           style: AppTheme.chapterTitleStyle.copyWith(
                             color: AppTheme.pureWhite,
                             fontSize: 16,
@@ -91,7 +147,7 @@ class SlokDetailScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        chapter.name,
+                        chapter.nameMeaning,
                         style: AppTheme.chapterTitleStyle.copyWith(
                           fontSize: 20,
                         ),
@@ -113,10 +169,10 @@ class SlokDetailScreen extends StatelessWidget {
 
                 // Sanskrit Text
                 DetailSection(
-                  title: 'संस्कृत श्लोक',
+                  title: getSanskritTextTitle(),
                   icon: Icons.auto_stories,
                   child: Text(
-                    slokDetail.text,
+                    slokDetail.displayText,
                     style: AppTheme.sanskritTextStyle.copyWith(
                       fontSize: 18,
                       height: 1.8,
@@ -129,7 +185,7 @@ class SlokDetailScreen extends StatelessWidget {
                 // Transliteration
                 if (slokDetail.transliteration.isNotEmpty) ...[
                   DetailSection(
-                    title: 'उच्चारण',
+                    title: getTransliterationTitle(),
                     icon: Icons.record_voice_over,
                     child: Text(
                       slokDetail.transliteration,
@@ -147,7 +203,7 @@ class SlokDetailScreen extends StatelessWidget {
                 // Word Meanings
                 if (slokDetail.wordMeanings.isNotEmpty) ...[
                   DetailSection(
-                    title: 'शब्दार्थ',
+                    title: getWordMeaningsTitle(),
                     icon: Icons.translate,
                     child: Text(
                       slokDetail.wordMeanings,
