@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,11 +12,14 @@ import 'Screens/Chapters/chapters_screen.dart';
 import 'Screens/Sloks/sloks_screen.dart';
 import 'Screens/SlokDetail/slok_detail_screen.dart';
 import 'Screens/Settings/settings_controller.dart';
+import 'firebase_options.dart';
 import 'utils/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   // Initialize settings controller
   final settingsController = Get.put(SettingsController());
   await settingsController.loadSettings();

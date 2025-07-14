@@ -8,8 +8,7 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: 'https://api.bhagvatgeeta.ashutechline.com',
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'https://api.bhagvatgeeta.ashutechline.com',
     connectTimeout: const Duration(seconds: 30),
     receiveTimeout: const Duration(seconds: 30),
   ));

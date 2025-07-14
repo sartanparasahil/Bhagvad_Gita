@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "82241150486",
+    "project_id": "bhagvatgeeta-91586",
+    "storage_bucket": "bhagvatgeeta-91586.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:82241150486:android:21de94a535f20640319f37",
+        "android_client_info": {
+          "package_name": "com.example.bhagvat_geeta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGIvmmeScpgFffo2UqhOyjdSVfqKq3zOY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
