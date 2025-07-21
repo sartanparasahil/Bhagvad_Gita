@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'Screens/Auth/login_screen.dart';
 import 'Screens/Auth/signup_screen.dart';
@@ -23,6 +24,8 @@ void main() async {
   // Initialize settings controller
   final settingsController = Get.put(SettingsController());
   await settingsController.loadSettings();
+  // Initialize Google Mobile Ads
+  await MobileAds.instance.initialize();
   
   runApp(const BhagavadGitaApp());
 }

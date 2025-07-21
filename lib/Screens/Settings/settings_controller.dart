@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,8 +14,6 @@ class SettingsController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
     selectedLanguage.value = prefs.getString('language') ?? 'hindi';
   }
-
-
 
   Future<void> setLanguage(String language) async {
     selectedLanguage.value = language;

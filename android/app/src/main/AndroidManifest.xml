@@ -3,6 +3,10 @@
         android:label="bhagvat_geeta"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- AdMob App ID -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-5157769145271323~4843976953"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

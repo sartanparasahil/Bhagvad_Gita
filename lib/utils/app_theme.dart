@@ -131,6 +131,8 @@ class AppTheme {
     );
   }
 
+  static Color get primaryColor => primarySaffron;
+
   // Text Styles
   static TextStyle get chapterTitleStyle => GoogleFonts.poppins(
     fontSize: 18,
