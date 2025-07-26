@@ -4,14 +4,16 @@ import '../../utils/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../Settings/settings_controller.dart';
 import '../Settings/settings_screen.dart';
+import '../../services/ads_service.dart';
+import 'home_controller.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+class HomeScreen extends GetView<HomeController> {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final SettingsController settingsController = Get.find<SettingsController>();
-
+  
     String getAppTitle() {
       if (settingsController.selectedLanguage.value == 'english') {
         return 'Bhagavad Gita';
@@ -88,145 +90,178 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppTheme.lightCream, AppTheme.pureWhite],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  
-                  // App Logo/Icon
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.sacredGradient,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primarySaffron.withOpacity(0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+      body: Stack(
+        children: [
+          Container(
+            height: Get.height,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [AppTheme.lightCream, AppTheme.pureWhite],
+              ),
+            ),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header
+                      Container(
+                        padding: EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.darkBrown.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.auto_stories,
-                      size: 60,
-                      color: AppTheme.pureWhite,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  
-                  // App Title
-                  Obx(() => Text(
-                    getAppTitle(),
-                    style: GoogleFonts.poppins(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.darkBrown,
-                    ),
-                    textAlign: TextAlign.center,
-                  )),
-                  const SizedBox(height: 8),
-                  
-                  Text(
-                    getSubtitle(),
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.spiritualBlue,
-                      fontStyle: FontStyle.italic,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
-                  
-                  // Welcome Message
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: AppTheme.cardDecoration,
-                    child: Column(
-                      children: [
-                        Obx(() => Text(
-                          getWelcomeTitle(),
-                          style: GoogleFonts.poppins(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.spiritualBlue,
-                          ),
-                          textAlign: TextAlign.center,
-                        )),
-                        const SizedBox(height: 12),
-                        Obx(() => Text(
-                          getWelcomeMessage(),
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.normal,
-                            color: AppTheme.darkBrown,
-                            height: 1.6,
-                          ),
-                          textAlign: TextAlign.center,
-                        )),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  
-                  // Start Reading Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Get.toNamed('/chapters');
-                      },
-                      icon: const Icon(Icons.menu_book, size: 24),
-                      label: Obx(() => Text(
-                        getStartReadingText(),
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.pureWhite,
-                        ),
-                      )),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primarySaffron,
-                        foregroundColor: AppTheme.pureWhite,
-                        elevation: 8,
-                        shadowColor: AppTheme.primarySaffron.withOpacity(0.3),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.auto_stories,
+                              color: AppTheme.primarySaffron,
+                              size: 30,
+                            ),
+                            SizedBox(width: 15),
+                            Obx(() => Text(
+                              getAppTitle(),
+                              style: TextStyle(
+                                color: AppTheme.darkBrown,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )),
+                          ],
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Quick Info
-                  Obx(() => Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildInfoCard('18', getChaptersText(), Icons.book),
-                      _buildInfoCard('700', getVersesText(), Icons.auto_stories),
-                      _buildInfoCard('1', getWisdomText(), Icons.lightbulb),
+                      SizedBox(height: 30),
+
+                      // Welcome Card
+                      Container(
+                        padding: EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppTheme.primarySaffron.withOpacity(0.1),
+                              AppTheme.spiritualBlue.withOpacity(0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: AppTheme.primarySaffron.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color: AppTheme.primarySaffron,
+                                  size: 28,
+                                ),
+                                SizedBox(width: 12),
+                                Obx(() => Text(
+                                  getWelcomeTitle(),
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.spiritualBlue,
+                                    fontFamily: 'Montserrat',
+                                  ),
+                                )),
+                              ],
+                            ),
+                            SizedBox(height: 16),
+                            Obx(() => Text(
+                              getWelcomeMessage(),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: AppTheme.darkBrown,
+                                height: 1.6,
+                                fontFamily: 'Montserrat',
+                              ),
+                              textAlign: TextAlign.center,
+                            )),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      
+                      // Start Reading Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Get.toNamed('/chapters');
+                          },
+                          icon: const Icon(Icons.menu_book, size: 24),
+                          label: Obx(() => Text(
+                            getStartReadingText(),
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.pureWhite,
+                            ),
+                          )),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primarySaffron,
+                            foregroundColor: AppTheme.pureWhite,
+                            elevation: 8,
+                            shadowColor: AppTheme.primarySaffron.withOpacity(0.3),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Quick Info
+                      Obx(() => Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildInfoCard('18', getChaptersText(), Icons.book),
+                          _buildInfoCard('700', getVersesText(), Icons.auto_stories),
+                          _buildInfoCard('1', getWisdomText(), Icons.lightbulb),
+                        ],
+                      )),
+                      const SizedBox(height: 20),
                     ],
-                  )),
-                  const SizedBox(height: 20),
-                ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+          // Fixed bottom banner ad
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Obx(() {
+              final bannerAdWidget = controller.adsService.getBannerAdWidget();
+              if (bannerAdWidget != null) {
+                return Container(
+                  color: Colors.white,
+                  child: bannerAdWidget,
+                );
+              }
+              return const SizedBox.shrink();
+            }),
+          ),
+        ],
       ),
     );
   }

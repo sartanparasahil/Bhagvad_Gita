@@ -3,15 +3,17 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'signup_controller.dart';
 import '../../widgets/loading_widget.dart';
+import '../../services/ads_service.dart';
 
-class SignupScreen extends StatelessWidget {
+class SignupScreen extends GetView<SignupController> {
   const SignupScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final SignupController controller = Get.put(SignupController());
     return Scaffold(
-      body: SafeArea(
+      body: Stack(
+        children: [
+          SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -60,7 +62,7 @@ class SignupScreen extends StatelessWidget {
                 const SizedBox(height: 32),
                 // Email field (NO Obx needed)
                 TextField(
-                  controller: controller.emailController,
+                  controller: Get.find<SignupController>().emailController,
                   decoration: InputDecoration(
                     labelText: 'Email',
                     prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF1A237E)),
@@ -75,8 +77,8 @@ class SignupScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 // Password field
                 Obx(() => TextField(
-                      controller: controller.passwordController,
-                      obscureText: !controller.isPasswordVisible.value,
+                      controller: Get.find<SignupController>().passwordController,
+                      obscureText: !Get.find<SignupController>().isPasswordVisible.value,
                       decoration: InputDecoration(
                         labelText: 'Password',
                         prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF1A237E)),
@@ -87,20 +89,20 @@ class SignupScreen extends StatelessWidget {
                         fillColor: Colors.white,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            controller.isPasswordVisible.value
+                            Get.find<SignupController>().isPasswordVisible.value
                                 ? Icons.visibility
                                 : Icons.visibility_off,
                             color: const Color(0xFF1A237E),
                           ),
-                          onPressed: () => controller.isPasswordVisible.toggle(),
+                          onPressed: () => Get.find<SignupController>().isPasswordVisible.toggle(),
                         ),
                       ),
                     )),
                 const SizedBox(height: 20),
                 // Confirm Password field
                 Obx(() => TextField(
-                      controller: controller.confirmPasswordController,
-                      obscureText: !controller.isPasswordVisible.value,
+                      controller: Get.find<SignupController>().confirmPasswordController,
+                      obscureText: !Get.find<SignupController>().isConfirmPasswordVisible.value,
                       decoration: InputDecoration(
                         labelText: 'Confirm Password',
                         prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF1A237E)),
@@ -111,12 +113,12 @@ class SignupScreen extends StatelessWidget {
                         fillColor: Colors.white,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            controller.isPasswordVisible.value
+                            Get.find<SignupController>().isConfirmPasswordVisible.value
                                 ? Icons.visibility
                                 : Icons.visibility_off,
                             color: const Color(0xFF1A237E),
                           ),
-                          onPressed: () => controller.isPasswordVisible.toggle(),
+                          onPressed: () => Get.find<SignupController>().isConfirmPasswordVisible.toggle(),
                         ),
                       ),
                     )),
@@ -125,8 +127,8 @@ class SignupScreen extends StatelessWidget {
                 Obx(() => Row(
                       children: [
                         Checkbox(
-                          value: controller.isTermsAccepted.value,
-                          onChanged: (val) => controller.isTermsAccepted.value = val ?? false,
+                          value: Get.find<SignupController>().isTermsAccepted.value,
+                          onChanged: (val) => Get.find<SignupController>().isTermsAccepted.value = val ?? false,
                           activeColor: const Color(0xFFFF9933),
                         ),
                         const Expanded(
@@ -147,8 +149,8 @@ class SignupScreen extends StatelessWidget {
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      onPressed: controller.isLoading.value ? null : controller.signup,
-                      child: controller.isLoading.value
+                      onPressed: Get.find<SignupController>().isLoading.value ? null : Get.find<SignupController>().signup,
+                      child: Get.find<SignupController>().isLoading.value
                           ? const LoadingWidget(isCompact: true, showShimmer: false)
                           : const Text(
                               'Sign Up',
@@ -218,7 +220,24 @@ class SignupScreen extends StatelessWidget {
               ],
             ),
           ),
-        ),
+        ),),
+          // Fixed bottom banner ad
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Obx(() {
+              final bannerAdWidget = Get.find<SignupController>().adsService.getBannerAdWidget();
+              if (bannerAdWidget != null) {
+                return Container(
+                  color: Colors.white,
+                  child: bannerAdWidget,
+                );
+              }
+              return const SizedBox.shrink();
+            }),
+          ),
+        ],
       ),
     );
   }

@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'login_controller.dart';
 import '../../widgets/loading_widget.dart';
+import '../../services/ads_service.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends GetView<LoginController> {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final LoginController controller = Get.put(LoginController());
     return Scaffold(
-      body: SafeArea(
+      body: Stack(
+        children: [
+          SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -59,7 +61,7 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox(height: 32),
                 // Email field (NO Obx needed)
                 TextField(
-                  controller: controller.emailController,
+                  controller: Get.find<LoginController>().emailController,
                   decoration: InputDecoration(
                     labelText: 'Email',
                     prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF1A237E)),
@@ -74,8 +76,8 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 // Password field
                 Obx(() => TextField(
-                      controller: controller.passwordController,
-                      obscureText: !controller.isPasswordVisible.value,
+                      controller: Get.find<LoginController>().passwordController,
+                      obscureText: !Get.find<LoginController>().isPasswordVisible.value,
                       decoration: InputDecoration(
                         labelText: 'Password',
                         prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF1A237E)),
@@ -86,22 +88,22 @@ class LoginScreen extends StatelessWidget {
                         fillColor: Colors.white,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            controller.isPasswordVisible.value
+                            Get.find<LoginController>().isPasswordVisible.value
                                 ? Icons.visibility
                                 : Icons.visibility_off,
                             color: const Color(0xFF1A237E),
                           ),
-                          onPressed: () => controller.isPasswordVisible.toggle(),
+                          onPressed: () => Get.find<LoginController>().isPasswordVisible.toggle(),
                         ),
                       ),
                     )),
                 const SizedBox(height: 12),
                 // Terms and conditions
-                Obx(() => Row(
-                      children: [
-                        Checkbox(
-                          value: controller.isTermsAccepted.value,
-                          onChanged: (val) => controller.isTermsAccepted.value = val ?? false,
+                                Obx(() => Row(
+                  children: [
+                    Checkbox(
+                      value: Get.find<LoginController>().isTermsAccepted.value,
+                      onChanged: (val) => Get.find<LoginController>().isTermsAccepted.value = val ?? false,
                           activeColor: const Color(0xFFFF9933),
                         ),
                         const Expanded(
@@ -122,8 +124,8 @@ class LoginScreen extends StatelessWidget {
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      onPressed: controller.isLoading.value ? null : controller.login,
-                      child: controller.isLoading.value
+                      onPressed: Get.find<LoginController>().isLoading.value ? null : Get.find<LoginController>().login,
+                      child: Get.find<LoginController>().isLoading.value
                           ? const LoadingWidget(isCompact: true, showShimmer: false)
                           : const Text(
                               'Login',
@@ -194,6 +196,24 @@ class LoginScreen extends StatelessWidget {
             ),
           ),
         ),
+          ),
+          // Fixed bottom banner ad
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Obx(() {
+              final bannerAdWidget = Get.find<LoginController>().adsService.getBannerAdWidget();
+              if (bannerAdWidget != null) {
+                return Container(
+                  color: Colors.white,
+                  child: bannerAdWidget,
+                );
+              }
+              return const SizedBox.shrink();
+            }),
+          ),
+        ],
       ),
     );
   }

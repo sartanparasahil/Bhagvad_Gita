@@ -1,82 +1,20 @@
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import '../../controllers/chapters_controller.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/loading_widget.dart';
 import '../../widgets/error_widget.dart';
 import '../Settings/settings_controller.dart';
+import '../../services/ads_service.dart';
 import 'package:shimmer/shimmer.dart';
+import 'chapters_controller.dart';
 
 
-class ChaptersScreen extends StatefulWidget {
+class ChaptersScreen extends GetView<ChaptersController> {
   const ChaptersScreen({Key? key}) : super(key: key);
 
   @override
-  State<ChaptersScreen> createState() => _ChaptersScreenState();
-}
-
-class _ChaptersScreenState extends State<ChaptersScreen> {
-  bool showAds = false;
-  late BannerAd _bannerAd;
-  bool _isBannerAdReady = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchRemoteConfig();
-  }
-
-  Future<void> _fetchRemoteConfig() async {
-    final remoteConfig = FirebaseRemoteConfig.instance;
-    await remoteConfig.fetchAndActivate();
-    final ads = remoteConfig.getBool('show_ads');
-    setState(() {
-      showAds = ads;
-    });
-    if (showAds) {
-      _loadBannerAd();
-    }
-  }
-
-  void _loadBannerAd() {
-    _bannerAd = BannerAd(
-      adUnitId: _getAdUnitId(),
-      request: const AdRequest(),
-      size: AdSize.banner,
-      listener: BannerAdListener(
-        onAdLoaded: (_) {
-          setState(() {
-            _isBannerAdReady = true;
-          });
-        },
-        onAdFailedToLoad: (ad, error) {
-          ad.dispose();
-        },
-      ),
-    )..load();
-  }
-
-  String _getAdUnitId() {
-    if (Theme.of(context).platform == TargetPlatform.iOS) {
-      return 'ca-app-pub-5157769145271323/8841881966'; // iOS Banner Ad Unit ID
-    } else {
-      return 'ca-app-pub-5157769145271323/8841881966'; // Android Banner Ad Unit ID
-    }
-  }
-
-  @override
-  void dispose() {
-    if (_isBannerAdReady) {
-      _bannerAd.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final ChaptersController controller = Get.put(ChaptersController());
+    final ChaptersController controller = Get.find<ChaptersController>();
     final SettingsController settingsController = Get.find<SettingsController>();
 
     String getTitle() {
@@ -121,16 +59,50 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
       appBar: AppBar(
         title: Text(getTitle()),
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(Icons.refresh),
-            onPressed: () => controller.refreshChapters(),
+            onSelected: (value) {
+              if (value == 'refresh') {
+                controller.refreshChapters();
+              } else if (value == 'force_refresh') {
+                controller.forceRefreshChapters();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'refresh',
+                child: Row(
+                  children: [
+                    const Icon(Icons.refresh, size: 20),
+                    const SizedBox(width: 8),
+                    Text(settingsController.selectedLanguage.value == 'english'
+                      ? 'Refresh'
+                      : 'रिफ्रेश'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'force_refresh',
+                child: Row(
+                  children: [
+                    const Icon(Icons.cloud_download, size: 20),
+                    const SizedBox(width: 8),
+                    Text(settingsController.selectedLanguage.value == 'english'
+                      ? 'Force Refresh'
+                      : 'फोर्स रिफ्रेश'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: Obx(() {
+          Column(
+            children: [
+              Expanded(
+                child: Obx(() {
               if (controller.isLoading.value) {
                 // Loading widget without shimmer effect for adhyat loading
                 return LoadingWidget(
@@ -152,10 +124,14 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
                 );
               }
 
-              return ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                itemCount: controller.chapters.length,
-                itemBuilder: (context, index) {
+              return RefreshIndicator(
+                onRefresh: () async {
+                  await controller.refreshChapters();
+                },
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                  itemCount: controller.chapters.length,
+                  itemBuilder: (context, index) {
                   final chapter = controller.chapters[index];
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
@@ -289,15 +265,28 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
                     ),
                   );
                 },
-              );
+              ),
+            );
             }),
           ),
-          if (showAds && _isBannerAdReady)
-            SizedBox(
-              height: _bannerAd.size.height.toDouble(),
-              width: _bannerAd.size.width.toDouble(),
-              child: AdWidget(ad: _bannerAd),
-            ),
+        ],
+      ),
+          // Fixed bottom banner ad
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Obx(() {
+              final bannerAdWidget = controller.adsService.getBannerAdWidget();
+              if (bannerAdWidget != null) {
+                return Container(
+                  color: Colors.white,
+                  child: bannerAdWidget,
+                );
+              }
+              return const SizedBox.shrink();
+            }),
+          ),
         ],
       ),
     );

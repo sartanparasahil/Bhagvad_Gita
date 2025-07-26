@@ -1,14 +1,20 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../services/ads_service.dart';
 
 class SettingsController extends GetxController {
   var selectedLanguage = 'hindi'.obs; // 'hindi' or 'english'
   var notificationsEnabled = true.obs; // Enable notifications by default
+  final AdsService _adsService = AdsService();
+
+  // Public getter for ads service
+  AdsService get adsService => _adsService;
   
   @override
   void onInit() {
     super.onInit();
     loadSettings();
+    _adsService.loadBannerAd();
   }
 
   Future<void> loadSettings() async {

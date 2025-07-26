@@ -1,13 +1,25 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import '../../services/ads_service.dart';
 
 class SignupController extends GetxController {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  final AdsService _adsService = AdsService();
   var isLoading = false.obs;
   var isPasswordVisible = false.obs;
+  var isConfirmPasswordVisible = false.obs;
   var isTermsAccepted = false.obs;
+
+  // Public getter for ads service
+  AdsService get adsService => _adsService;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _adsService.loadBannerAd();
+  }
 
   void signup() async {
     if (!isTermsAccepted.value) {

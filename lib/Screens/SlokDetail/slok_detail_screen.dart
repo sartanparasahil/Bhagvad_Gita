@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../controllers/slok_detail_controller.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/loading_widget.dart';
 import '../../widgets/error_widget.dart';
 import '../../services/api_service.dart';
 import '../Settings/settings_controller.dart';
+import '../../services/ads_service.dart';
+import 'slok_detail_controller.dart';
 
-class SlokDetailScreen extends StatelessWidget {
+class SlokDetailScreen extends GetView<SlokDetailController> {
   const SlokDetailScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final SlokDetailController controller = Get.put(SlokDetailController());
+    final SlokDetailController controller = Get.find<SlokDetailController>();
     final SettingsController settingsController = Get.find<SettingsController>();
     final Map<String, dynamic> arguments = Get.arguments ?? {};
     final Slok slok = arguments['slok'];
@@ -112,158 +113,177 @@ class SlokDetailScreen extends StatelessWidget {
         }
 
         final slokDetail = controller.slokDetail.value!;
-        return Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [AppTheme.lightCream, AppTheme.pureWhite],
-            ),
-          ),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header Card
-                Container(
-                  decoration: AppTheme.cardDecoration,
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          gradient: AppTheme.sacredGradient,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          getChapterVerseText(),
-                          style: AppTheme.chapterTitleStyle.copyWith(
-                            color: AppTheme.pureWhite,
-                            fontSize: 16,
+        return Stack(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [AppTheme.lightCream, AppTheme.pureWhite],
+                ),
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Card
+                    Container(
+                      decoration: AppTheme.cardDecoration,
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              gradient: AppTheme.sacredGradient,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              getChapterVerseText(),
+                              style: AppTheme.chapterTitleStyle.copyWith(
+                                color: AppTheme.pureWhite,
+                                fontSize: 16,
+                              ),
+                            ),
                           ),
+                          const SizedBox(height: 16),
+                          Text(
+                            chapter.nameMeaning,
+                            style: AppTheme.chapterTitleStyle.copyWith(
+                              fontSize: 20,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            chapter.nameTranslated,
+                            style: AppTheme.meaningTextStyle.copyWith(
+                              fontSize: 14,
+                              fontStyle: FontStyle.italic,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Sanskrit Text
+                    DetailSection(
+                      title: getSanskritTextTitle(),
+                      icon: Icons.text_fields,
+                      child: Text(
+                        slokDetail.displayText,
+                        style: AppTheme.sanskritTextStyle.copyWith(
+                          fontSize: 18,
+                          height: 1.8,
+                        ),
+                        textAlign: TextAlign.justify,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Transliteration
+                    if (slokDetail.transliteration.isNotEmpty) ...[
+                      DetailSection(
+                        title: getTransliterationTitle(),
+                        icon: Icons.record_voice_over,
+                        child: Text(
+                          slokDetail.transliteration,
+                          style: AppTheme.meaningTextStyle.copyWith(
+                            fontSize: 16,
+                            height: 1.6,
+                          ),
+                          textAlign: TextAlign.justify,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        chapter.nameMeaning,
-                        style: AppTheme.chapterTitleStyle.copyWith(
-                          fontSize: 20,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        chapter.nameTranslated,
-                        style: AppTheme.meaningTextStyle.copyWith(
-                          fontSize: 14,
-                          fontStyle: FontStyle.italic,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                      const SizedBox(height: 20),
                     ],
-                  ),
-                ),
-                const SizedBox(height: 20),
 
-                // Sanskrit Text
-                DetailSection(
-                  title: getSanskritTextTitle(),
-                  icon: Icons.auto_stories,
-                  child: Text(
-                    slokDetail.displayText,
-                    style: AppTheme.sanskritTextStyle.copyWith(
-                      fontSize: 18,
-                      height: 1.8,
-                    ),
-                    textAlign: TextAlign.justify,
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Transliteration
-                if (slokDetail.transliteration.isNotEmpty) ...[
-                  DetailSection(
-                    title: getTransliterationTitle(),
-                    icon: Icons.record_voice_over,
-                    child: Text(
-                      slokDetail.transliteration,
-                      style: AppTheme.meaningTextStyle.copyWith(
-                        fontSize: 16,
-                        fontStyle: FontStyle.italic,
-                        height: 1.6,
+                    // Word Meanings
+                    if (slokDetail.wordMeanings.isNotEmpty) ...[
+                      DetailSection(
+                        title: getWordMeaningsTitle(),
+                        icon: Icons.translate,
+                        child: Text(
+                          slokDetail.wordMeanings,
+                          style: AppTheme.meaningTextStyle.copyWith(
+                            fontSize: 16,
+                            height: 1.6,
+                          ),
+                          textAlign: TextAlign.justify,
+                        ),
                       ),
-                      textAlign: TextAlign.justify,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                      const SizedBox(height: 20),
+                    ],
 
-                // Word Meanings
-                if (slokDetail.wordMeanings.isNotEmpty) ...[
-                  DetailSection(
-                    title: getWordMeaningsTitle(),
-                    icon: Icons.translate,
-                    child: Text(
-                      slokDetail.wordMeanings,
-                      style: AppTheme.meaningTextStyle.copyWith(
-                        fontSize: 16,
-                        height: 1.6,
-                      ),
-                      textAlign: TextAlign.justify,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                    // Translation
+                    Obx(() {
+                      final translation = settingsController.getTranslation(slokDetail.commentaries);
+                      if (translation.isNotEmpty && translation != 'Translation not available') {
+                        return Column(
+                          children: [
+                            DetailSection(
+                              title: settingsController.selectedLanguage.value == 'hindi' ? 'अनुवाद' : 'Translation',
+                              icon: Icons.language,
+                              child: Text(
+                                translation,
+                                style: AppTheme.meaningTextStyle.copyWith(
+                                  fontSize: 16,
+                                  height: 1.6,
+                                ),
+                                textAlign: TextAlign.justify,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }),
 
-                // Translation
-                Obx(() {
-                  final translation = settingsController.getTranslation(slokDetail.commentaries);
-                  if (translation.isNotEmpty && translation != 'Translation not available') {
-                    return Column(
-                      children: [
-                        DetailSection(
-                          title: settingsController.selectedLanguage.value == 'hindi' ? 'अनुवाद' : 'Translation',
-                          icon: Icons.language,
+                    // Purport
+                    Obx(() {
+                      final purport = settingsController.getPurport(slokDetail.commentaries);
+                      if (purport.isNotEmpty && purport != 'Purport not available') {
+                        return DetailSection(
+                          title: settingsController.selectedLanguage.value == 'hindi' ? 'भावार्थ' : 'Purport',
+                          icon: Icons.psychology,
                           child: Text(
-                            translation,
+                            purport,
                             style: AppTheme.meaningTextStyle.copyWith(
                               fontSize: 16,
                               height: 1.6,
                             ),
                             textAlign: TextAlign.justify,
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }),
-
-                // Purport
-                Obx(() {
-                  final purport = settingsController.getPurport(slokDetail.commentaries);
-                  if (purport.isNotEmpty && purport != 'Purport not available') {
-                    return DetailSection(
-                      title: settingsController.selectedLanguage.value == 'hindi' ? 'भावार्थ' : 'Purport',
-                      icon: Icons.psychology,
-                      child: Text(
-                        purport,
-                        style: AppTheme.meaningTextStyle.copyWith(
-                          fontSize: 16,
-                          height: 1.6,
-                        ),
-                        textAlign: TextAlign.justify,
-                      ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }),
-              ],
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }),
+                  ],
+                ),
+              ),
             ),
-          ),
+            // Fixed bottom banner ad
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Obx(() {
+                final bannerAdWidget = controller.adsService.getBannerAdWidget();
+                if (bannerAdWidget != null) {
+                  return Container(
+                    color: Colors.white,
+                    child: bannerAdWidget,
+                  );
+                }
+                return const SizedBox.shrink();
+              }),
+            ),
+          ],
         );
       }),
     );

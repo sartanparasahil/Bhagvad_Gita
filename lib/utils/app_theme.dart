@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
+
+import '../bindings/app_bindings.dart';
 
 class AppTheme {
   // Colors
@@ -13,6 +16,7 @@ class AppTheme {
   static const Color darkBrown = Color(0xFF3E2723);
   static const Color lightBrown = Color(0xFF8D6E63);
   static const Color errorRed = Color(0xFFD32F2F);
+  static const Color textColor = Color(0xFF3E2723); // Same as darkBrown for consistency
 
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(
@@ -123,7 +127,7 @@ class AppTheme {
         ),
         iconTheme: const IconThemeData(color: pureWhite),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: spiritualBlue,
         foregroundColor: pureWhite,
         elevation: 8,
@@ -198,4 +202,4 @@ class AppTheme {
       ),
     ],
   );
-} 
+}

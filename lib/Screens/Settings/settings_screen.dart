@@ -4,14 +4,15 @@ import '../Home/home_screen.dart';
 import 'settings_controller.dart';
 import '../../utils/app_theme.dart';
 import '../../services/notification_service.dart';
+import '../../services/ads_service.dart';
+import '../../widgets/app_update_test_widget.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends GetView<SettingsController> {
   SettingsScreen({Key? key}) : super(key: key);
-
-  final SettingsController controller = Get.put(SettingsController());
 
   @override
   Widget build(BuildContext context) {
+    final SettingsController controller = Get.find<SettingsController>();
     String getTitle() {
       if (controller.selectedLanguage.value == 'english') {
         return 'Settings';
@@ -119,48 +120,50 @@ class SettingsScreen extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
       ),
-      body: Container(
-        color: AppTheme.lightCream,
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Container(
-                  padding: EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.darkBrown.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
+      body: Stack(
+        children: [
+          Container(
+            color: AppTheme.lightCream,
+            child: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Container(
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.darkBrown.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.settings,
-                        color: AppTheme.primarySaffron,
-                        size: 30,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.settings,
+                            color: AppTheme.primarySaffron,
+                            size: 30,
+                          ),
+                          SizedBox(width: 15),
+                          Obx(() => Text(
+                            getAppSettingsText(),
+                            style: TextStyle(
+                              color: AppTheme.darkBrown,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )),
+                        ],
                       ),
-                      SizedBox(width: 15),
-                      Obx(() => Text(
-                        getAppSettingsText(),
-                        style: TextStyle(
-                          color: AppTheme.darkBrown,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 30),
+                    ),
+                    SizedBox(height: 30),
 
                 // Language Settings
                 Obx(() => _buildSettingsCard(
@@ -200,24 +203,47 @@ class SettingsScreen extends StatelessWidget {
                 )),
                 SizedBox(height: 20),
 
-                // About Section
-                Obx(() => _buildSettingsCard(
-                  title: getAboutText(),
-                  subtitle: getAboutSubtitle(),
-                  icon: Icons.info,
-                  child: Column(
-                    children: [
-                      _buildInfoRow(getAppVersionText(), '1.0.0'),
-                      _buildInfoRow(getDeveloperText(), 'Bhagavad Gita App'),
-                      _buildInfoRow(getApiSourceText(), 'Vedic Scriptures'),
-                    ],
-                  ),
-                )),
-                SizedBox(height: 30), // Extra space at bottom
-              ],
+                    // About Section
+                    Obx(() => _buildSettingsCard(
+                      title: getAboutText(),
+                      subtitle: getAboutSubtitle(),
+                      icon: Icons.info,
+                      child: Column(
+                        children: [
+                          _buildInfoRow(getAppVersionText(), '1.0.0'),
+                          _buildInfoRow(getDeveloperText(), 'Bhagavad Gita App'),
+                          _buildInfoRow(getApiSourceText(), 'Vedic Scriptures'),
+                        ],
+                      ),
+                    )),
+                    SizedBox(height: 20),
+
+                    // App Update Test Section
+                    const AppUpdateTestWidget(),
+                    SizedBox(height: 20),
+
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
+          // Fixed bottom banner ad
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Obx(() {
+              final bannerAdWidget = controller.adsService.getBannerAdWidget();
+              if (bannerAdWidget != null) {
+                return Container(
+                  color: Colors.white,
+                  child: bannerAdWidget,
+                );
+              }
+              return const SizedBox.shrink();
+            }),
+          ),
+        ],
       ),
     );
   }
@@ -408,4 +434,4 @@ class SettingsScreen extends StatelessWidget {
       ],
     ));
   }
-} 
+}

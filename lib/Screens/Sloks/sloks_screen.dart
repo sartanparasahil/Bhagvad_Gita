@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../controllers/sloks_controller.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/loading_widget.dart';
 import '../../widgets/error_widget.dart';
 import '../../services/api_service.dart';
 import '../Settings/settings_controller.dart';
+import 'sloks_controller.dart';
 
-class SloksScreen extends StatelessWidget {
+class SloksScreen extends GetView<SloksController> {
   const SloksScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final SloksController controller = Get.put(SloksController());
+    final SloksController controller = Get.find<SloksController>();
     final SettingsController settingsController = Get.find<SettingsController>();
     final Map<String, dynamic> arguments = Get.arguments ?? {};
     final Chapter chapter = arguments['chapter'];
@@ -86,29 +86,49 @@ class SloksScreen extends StatelessWidget {
           );
         }
 
-        return Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [AppTheme.lightCream, AppTheme.pureWhite],
+        return Stack(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [AppTheme.lightCream, AppTheme.pureWhite],
+                ),
+              ),
+              child: RefreshIndicator(
+                onRefresh: () async => controller.refreshSloks(),
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: controller.sloks.length,
+                  itemBuilder: (context, index) {
+                    final slok = controller.sloks[index];
+                    return SlokCard(
+                      slok: slok, 
+                      chapter: chapter, 
+                      verseText: getVerseText()
+                    );
+                  },
+                ),
+              ),
             ),
-          ),
-          child: RefreshIndicator(
-            onRefresh: () async => controller.refreshSloks(),
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: controller.sloks.length,
-              itemBuilder: (context, index) {
-                final slok = controller.sloks[index];
-                return SlokCard(
-                  slok: slok, 
-                  chapter: chapter, 
-                  verseText: getVerseText()
-                );
-              },
+            // Fixed bottom banner ad
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Obx(() {
+                final bannerAdWidget = controller.adsService.getBannerAdWidget();
+                if (bannerAdWidget != null) {
+                  return Container(
+                    color: Colors.white,
+                    child: bannerAdWidget,
+                  );
+                }
+                return const SizedBox.shrink();
+              }),
             ),
-          ),
+          ],
         );
       }),
     );

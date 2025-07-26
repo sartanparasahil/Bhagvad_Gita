@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'dart:convert';
 import 'package:get/get.dart';
 import '../Screens/Settings/settings_controller.dart';
+import 'storage_service.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -12,6 +13,8 @@ class ApiService {
     connectTimeout: const Duration(seconds: 30),
     receiveTimeout: const Duration(seconds: 30),
   ));
+  
+  final StorageService _storageService = StorageService();
 
   // Test method to verify API connection
   Future<void> testApiConnection() async {
@@ -32,6 +35,16 @@ class ApiService {
   // Get all chapters
   Future<List<Chapter>> getChapters() async {
     try {
+      // First, check if we have valid cached data
+      if (_storageService.isChaptersCacheValid()) {
+        final cachedChapters = _storageService.getCachedChapters();
+        if (cachedChapters != null && cachedChapters.isNotEmpty) {
+          print('Loading chapters from cache');
+          return cachedChapters;
+        }
+      }
+      
+      print('Fetching chapters from API');
       final response = await _dio.get('/api/chapters');
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = response.data;
@@ -39,18 +52,33 @@ class ApiService {
         // Check if response has success and data fields
         if (responseData['success'] == true && responseData['data'] != null) {
           final List<dynamic> data = responseData['data'];
-          return data.map((json) => Chapter.fromJson(Map<String, dynamic>.from(json))).toList();
+          final chapters = data.map((json) => Chapter.fromJson(Map<String, dynamic>.from(json))).toList();
+          
+          // Cache the chapters
+          await _storageService.cacheChapters(chapters);
+          return chapters;
         } else {
           // Fallback: try to parse as direct array
           if (response.data is List) {
             final List<dynamic> data = response.data;
-            return data.map((json) => Chapter.fromJson(Map<String, dynamic>.from(json))).toList();
+            final chapters = data.map((json) => Chapter.fromJson(Map<String, dynamic>.from(json))).toList();
+            
+            // Cache the chapters
+            await _storageService.cacheChapters(chapters);
+            return chapters;
           }
           throw Exception('Invalid response format');
         }
       }
       throw Exception('Failed to load chapters');
     } catch (e) {
+      // If API call fails, try to return cached data even if expired
+      print('API call failed, trying to load from cache: $e');
+      final cachedChapters = _storageService.getCachedChapters();
+      if (cachedChapters != null && cachedChapters.isNotEmpty) {
+        print('Loading chapters from expired cache');
+        return cachedChapters;
+      }
       throw Exception('Error: $e');
     }
   }
@@ -58,6 +86,17 @@ class ApiService {
   // Get all sloks for a chapter
   Future<List<Slok>> getSloks(int chapterNumber) async {
     try {
+      // First, check if we have valid cached data
+      if (_storageService.isSloksCacheValid(chapterNumber)) {
+        final cachedSloks = _storageService.getCachedSloks(chapterNumber);
+        if (cachedSloks != null && cachedSloks.isNotEmpty) {
+          print('Loading sloks for chapter $chapterNumber from cache');
+          return cachedSloks;
+        }
+      }
+      
+      print('Fetching sloks for chapter $chapterNumber from API');
+      
       // Get the total verse count for this chapter first
       final chaptersResponse = await _dio.get('/api/chapters');
       int totalVerses = 0;
@@ -153,6 +192,9 @@ class ApiService {
       
       if (allSloks.isNotEmpty) {
         print('Successfully loaded ${allSloks.length} verses for chapter $chapterNumber');
+        
+        // Cache the sloks
+        await _storageService.cacheSloks(chapterNumber, allSloks);
         return allSloks;
       }
       
@@ -160,6 +202,14 @@ class ApiService {
       throw Exception('Failed to load sloks - no verses found');
     } catch (e) {
       print('Error loading sloks for chapter $chapterNumber: $e');
+      
+      // If API call fails, try to return cached data even if expired
+      final cachedSloks = _storageService.getCachedSloks(chapterNumber);
+      if (cachedSloks != null && cachedSloks.isNotEmpty) {
+        print('Loading sloks for chapter $chapterNumber from expired cache');
+        return cachedSloks;
+      }
+      
       throw Exception('Error: $e');
     }
   }
@@ -190,6 +240,16 @@ class ApiService {
   // Get specific slok details
   Future<SlokDetail> getSlokDetail(int chapterNumber, int slokNumber) async {
     try {
+      // First, check if we have valid cached data
+      if (_storageService.isSlokDetailCacheValid(chapterNumber, slokNumber)) {
+        final cachedDetail = _storageService.getCachedSlokDetail(chapterNumber, slokNumber);
+        if (cachedDetail != null) {
+          print('Loading slok detail for chapter $chapterNumber, slok $slokNumber from cache');
+          return cachedDetail;
+        }
+      }
+      
+      print('Fetching slok detail for chapter $chapterNumber, slok $slokNumber from API');
       final response = await _dio.get('/api/verses/$chapterNumber/$slokNumber');
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = response.data;
@@ -197,15 +257,27 @@ class ApiService {
         // Check if response has success and data fields
         if (responseData['success'] == true && responseData['data'] != null) {
           final data = responseData['data'];
-          return SlokDetail.fromJson(Map<String, dynamic>.from(data));
+          final slokDetail = SlokDetail.fromJson(Map<String, dynamic>.from(data));
+          
+          // Cache the slok detail
+          await _storageService.cacheSlokDetail(chapterNumber, slokNumber, slokDetail);
+          return slokDetail;
         } else {
           // Fallback: try to parse as direct object
           if (response.data is Map) {
-            return SlokDetail.fromJson(Map<String, dynamic>.from(response.data));
+            final slokDetail = SlokDetail.fromJson(Map<String, dynamic>.from(response.data));
+            
+            // Cache the slok detail
+            await _storageService.cacheSlokDetail(chapterNumber, slokNumber, slokDetail);
+            return slokDetail;
           } else if (response.data is String) {
             try {
               final parsed = Map<String, dynamic>.from(jsonDecode(response.data));
-              return SlokDetail.fromJson(parsed);
+              final slokDetail = SlokDetail.fromJson(parsed);
+              
+              // Cache the slok detail
+              await _storageService.cacheSlokDetail(chapterNumber, slokNumber, slokDetail);
+              return slokDetail;
             } catch (e) {
               throw Exception('Failed to parse string response: $e');
             }
@@ -216,6 +288,13 @@ class ApiService {
       }
       throw Exception('Failed to load slok details');
     } catch (e) {
+      // If API call fails, try to return cached data even if expired
+      print('API call failed, trying to load from cache: $e');
+      final cachedDetail = _storageService.getCachedSlokDetail(chapterNumber, slokNumber);
+      if (cachedDetail != null) {
+        print('Loading slok detail for chapter $chapterNumber, slok $slokNumber from expired cache');
+        return cachedDetail;
+      }
       throw Exception('Error: $e');
     }
   }

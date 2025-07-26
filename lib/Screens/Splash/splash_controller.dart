@@ -14,6 +14,8 @@ class SplashController extends GetxController with GetSingleTickerProviderStateM
     );
     fadeAnimation = Tween<double>(begin: 0, end: 1).animate(animationController);
     animationController.forward();
+    
+    // Navigate to home after splash duration
     Future.delayed(const Duration(seconds: 3), () {
       Get.offAllNamed('/home');
     });
@@ -24,4 +26,6 @@ class SplashController extends GetxController with GetSingleTickerProviderStateM
     animationController.dispose();
     super.onClose();
   }
+
+
 }
