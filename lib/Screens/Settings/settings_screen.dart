@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../Home/home_screen.dart';
 import 'settings_controller.dart';
 import '../../utils/app_theme.dart';
+import '../../services/notification_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   SettingsScreen({Key? key}) : super(key: key);
@@ -82,6 +83,24 @@ class SettingsScreen extends StatelessWidget {
         return 'एपीआई स्रोत';
       }
     }
+
+    String getNotificationText() {
+      if (controller.selectedLanguage.value == 'english') {
+        return 'Daily Notifications';
+      } else {
+        return 'दैनिक सूचनाएं';
+      }
+    }
+
+    String getNotificationSubtitle() {
+      if (controller.selectedLanguage.value == 'english') {
+        return 'Get daily random slok at 9 AM';
+      } else {
+        return 'सुबह 9 बजे दैनिक रैंडम श्लोक प्राप्त करें';
+      }
+    }
+
+
 
     return Scaffold(
       appBar: AppBar(
@@ -163,6 +182,19 @@ class SettingsScreen extends StatelessWidget {
                         'english',
                         Icons.flag_outlined,
                       ),
+                    ],
+                  ),
+                )),
+                SizedBox(height: 20),
+
+                // Notification Settings
+                Obx(() => _buildSettingsCard(
+                  title: getNotificationText(),
+                  subtitle: getNotificationSubtitle(),
+                  icon: Icons.notifications,
+                  child: Column(
+                    children: [
+                      _buildNotificationToggle(),
                     ],
                   ),
                 )),
@@ -335,5 +367,45 @@ class SettingsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildNotificationToggle() {
+    return Obx(() => Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          controller.selectedLanguage.value == 'english' ? 'Enable Notifications' : 'सूचनाएं सक्षम करें',
+          style: TextStyle(
+            fontSize: 16,
+            color: AppTheme.darkBrown,
+          ),
+        ),
+        Switch(
+          value: controller.notificationsEnabled.value,
+          onChanged: (value) async {
+            controller.setNotificationsEnabled(value);
+            final notificationService = NotificationService();
+            if (value) {
+              await notificationService.scheduleDailyNotification();
+              Get.snackbar(
+                'Notifications Enabled',
+                'Daily notifications scheduled for 9 AM',
+                backgroundColor: AppTheme.primarySaffron,
+                colorText: Colors.white,
+              );
+            } else {
+              await notificationService.cancelAllNotifications();
+              Get.snackbar(
+                'Notifications Disabled',
+                'Daily notifications cancelled',
+                backgroundColor: Colors.grey,
+                colorText: Colors.white,
+              );
+            }
+          },
+          activeColor: AppTheme.primarySaffron,
+        ),
+      ],
+    ));
   }
 } 

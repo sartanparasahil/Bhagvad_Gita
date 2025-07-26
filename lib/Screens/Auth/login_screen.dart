@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'login_controller.dart';
+import '../../widgets/loading_widget.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -123,11 +124,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                       onPressed: controller.isLoading.value ? null : controller.login,
                       child: controller.isLoading.value
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
+                          ? const LoadingWidget(isCompact: true, showShimmer: false)
                           : const Text(
                               'Login',
                               style: TextStyle(fontSize: 18, color: Colors.white),

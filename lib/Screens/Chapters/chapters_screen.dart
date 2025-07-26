@@ -132,24 +132,10 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
-                // Shimmer effect while loading
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                  itemCount: 6,
-                  itemBuilder: (context, index) {
-                    return Shimmer.fromColors(
-                      baseColor: AppTheme.lightCream,
-                      highlightColor: AppTheme.sacredGold.withOpacity(0.3),
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 20),
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: AppTheme.pureWhite,
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                    );
-                  },
+                // Loading widget without shimmer effect for adhyat loading
+                return LoadingWidget(
+                  message: getLoadingMessage(),
+                  showShimmer: false,
                 );
               }
 

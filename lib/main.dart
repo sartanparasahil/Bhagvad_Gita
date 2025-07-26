@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'services/notification_service.dart';
+import 'services/background_service.dart';
 
 import 'Screens/Auth/login_screen.dart';
 import 'Screens/Auth/signup_screen.dart';
@@ -21,13 +23,31 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  print('Firebase initialized');
   // Initialize settings controller
   final settingsController = Get.put(SettingsController());
   await settingsController.loadSettings();
+  print('Settings loaded');
   // Initialize Google Mobile Ads
   await MobileAds.instance.initialize();
-  
+  print('Google Mobile Ads initialized');
+
   runApp(const BhagavadGitaApp());
+
+  // Initialize background service for persistent notifications
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    final backgroundService = BackgroundService();
+    await backgroundService.initialize();
+    print('Background service initialized');
+    
+    final notificationService = NotificationService();
+    await notificationService.initialize();
+    print('Notification service initialized');
+    await notificationService.requestPermissions();
+    print('Notification permissions requested');
+    await notificationService.scheduleDailyNotification();
+    print('Daily notification scheduled');
+  });
 }
 
 class BhagavadGitaApp extends StatelessWidget {

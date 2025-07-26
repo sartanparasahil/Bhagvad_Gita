@@ -6,8 +6,10 @@ import '../Screens/Settings/settings_controller.dart';
 
 class LoadingWidget extends StatelessWidget {
   final String? message;
+  final bool showShimmer;
+  final bool isCompact;
   
-  const LoadingWidget({Key? key, this.message}) : super(key: key);
+  const LoadingWidget({Key? key, this.message, this.showShimmer = true, this.isCompact = false}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,43 +25,49 @@ class LoadingWidget extends StatelessWidget {
       }
     }
 
+    Widget logoWidget = Container(
+      width: isCompact ? 40 : 80,
+      height: isCompact ? 40 : 80,
+      decoration: BoxDecoration(
+        color: AppTheme.primarySaffron,
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        Icons.auto_stories,
+        size: isCompact ? 20 : 40,
+        color: AppTheme.pureWhite,
+      ),
+    );
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Shimmer effect with logo in center
-          Shimmer.fromColors(
-            baseColor: AppTheme.primarySaffron.withOpacity(0.3),
-            highlightColor: AppTheme.primarySaffron,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppTheme.primarySaffron,
-                shape: BoxShape.circle,
+          // Logo with or without shimmer effect
+          showShimmer 
+            ? Shimmer.fromColors(
+                baseColor: AppTheme.primarySaffron.withOpacity(0.3),
+                highlightColor: AppTheme.primarySaffron,
+                child: logoWidget,
+              )
+            : logoWidget,
+          if (!isCompact) ...[
+            const SizedBox(height: 24),
+            Text(
+              getLoadingMessage(),
+              style: AppTheme.meaningTextStyle.copyWith(
+                fontSize: 16,
+                color: AppTheme.darkBrown,
               ),
-              child: const Icon(
-                Icons.auto_stories,
-                size: 40,
-                color: AppTheme.pureWhite,
-              ),
+              textAlign: TextAlign.center,
             ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            getLoadingMessage(),
-            style: AppTheme.meaningTextStyle.copyWith(
-              fontSize: 16,
-              color: AppTheme.darkBrown,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
+          ],
           SizedBox(
-            width: 40,
-            height: 40,
+            width: isCompact ? 24 : 40,
+            height: isCompact ? 24 : 40,
             child: CircularProgressIndicator(
-              strokeWidth: 3,
+              strokeWidth: isCompact ? 2 : 3,
               valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primarySaffron),
             ),
           ),

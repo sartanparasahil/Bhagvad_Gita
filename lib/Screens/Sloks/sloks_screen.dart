@@ -70,7 +70,7 @@ class SloksScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return LoadingWidget(message: getLoadingMessage());
+          return LoadingWidget(message: getLoadingMessage(), showShimmer: false);
         }
 
         if (controller.errorMessage.isNotEmpty) {

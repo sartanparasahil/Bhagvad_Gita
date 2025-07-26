@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'signup_controller.dart';
+import '../../widgets/loading_widget.dart';
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({Key? key}) : super(key: key);
@@ -148,11 +149,7 @@ class SignupScreen extends StatelessWidget {
                       ),
                       onPressed: controller.isLoading.value ? null : controller.signup,
                       child: controller.isLoading.value
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
+                          ? const LoadingWidget(isCompact: true, showShimmer: false)
                           : const Text(
                               'Sign Up',
                               style: TextStyle(fontSize: 18, color: Colors.white),

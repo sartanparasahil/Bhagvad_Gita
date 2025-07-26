@@ -164,6 +164,29 @@ class ApiService {
     }
   }
 
+  // Get random slok from any chapter
+  Future<Map<String, dynamic>> getRandomSlok() async {
+    try {
+      // Generate random chapter number (1-18)
+      final random = DateTime.now().millisecondsSinceEpoch;
+      final chapterNumber = (random % 18) + 1;
+      
+      final response = await _dio.get('/api/random?chapter=$chapterNumber');
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = response.data;
+        
+        if (responseData['success'] == true && responseData['data'] != null) {
+          return responseData['data'];
+        } else {
+          throw Exception('Invalid response format');
+        }
+      }
+      throw Exception('Failed to load random slok');
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
   // Get specific slok details
   Future<SlokDetail> getSlokDetail(int chapterNumber, int slokNumber) async {
     try {

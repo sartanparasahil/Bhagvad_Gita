@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsController extends GetxController {
   var selectedLanguage = 'hindi'.obs; // 'hindi' or 'english'
+  var notificationsEnabled = true.obs; // Enable notifications by default
   
   @override
   void onInit() {
@@ -13,12 +14,19 @@ class SettingsController extends GetxController {
   Future<void> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     selectedLanguage.value = prefs.getString('language') ?? 'hindi';
+    notificationsEnabled.value = prefs.getBool('notifications_enabled') ?? true;
   }
 
   Future<void> setLanguage(String language) async {
     selectedLanguage.value = language;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('language', language);
+  }
+
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    notificationsEnabled.value = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notifications_enabled', enabled);
   }
 
   String getTranslation(Map<String, dynamic> commentaries) {

@@ -14,7 +14,7 @@ class SplashController extends GetxController with GetSingleTickerProviderStateM
     );
     fadeAnimation = Tween<double>(begin: 0, end: 1).animate(animationController);
     animationController.forward();
-    Future.delayed(const Duration(seconds: 10), () {
+    Future.delayed(const Duration(seconds: 3), () {
       Get.offAllNamed('/home');
     });
   }
