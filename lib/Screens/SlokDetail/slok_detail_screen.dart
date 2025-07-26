@@ -185,22 +185,7 @@ class SlokDetailScreen extends GetView<SlokDetailController> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Transliteration
-                    if (slokDetail.transliteration.isNotEmpty) ...[
-                      DetailSection(
-                        title: getTransliterationTitle(),
-                        icon: Icons.record_voice_over,
-                        child: Text(
-                          slokDetail.transliteration,
-                          style: AppTheme.meaningTextStyle.copyWith(
-                            fontSize: 16,
-                            height: 1.6,
-                          ),
-                          textAlign: TextAlign.justify,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
+
 
                     // Word Meanings
                     if (slokDetail.wordMeanings.isNotEmpty) ...[

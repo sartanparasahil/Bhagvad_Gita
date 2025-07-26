@@ -89,28 +89,28 @@ class SloksScreen extends GetView<SloksController> {
         return Stack(
           children: [
             Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [AppTheme.lightCream, AppTheme.pureWhite],
-                ),
-              ),
-              child: RefreshIndicator(
-                onRefresh: () async => controller.refreshSloks(),
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: controller.sloks.length,
-                  itemBuilder: (context, index) {
-                    final slok = controller.sloks[index];
-                    return SlokCard(
-                      slok: slok, 
-                      chapter: chapter, 
-                      verseText: getVerseText()
-                    );
-                  },
-                ),
-              ),
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [AppTheme.lightCream, AppTheme.pureWhite],
+            ),
+          ),
+          child: RefreshIndicator(
+            onRefresh: () async => controller.refreshSloks(),
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: controller.sloks.length,
+              itemBuilder: (context, index) {
+                final slok = controller.sloks[index];
+                return SlokCard(
+                  slok: slok, 
+                  chapter: chapter, 
+                  verseText: getVerseText()
+                );
+              },
+            ),
+          ),
             ),
             // Fixed bottom banner ad
             Positioned(

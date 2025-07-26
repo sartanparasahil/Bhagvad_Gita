@@ -99,9 +99,9 @@ class LoginScreen extends GetView<LoginController> {
                     )),
                 const SizedBox(height: 12),
                 // Terms and conditions
-                                Obx(() => Row(
-                  children: [
-                    Checkbox(
+                Obx(() => Row(
+                      children: [
+                        Checkbox(
                       value: Get.find<LoginController>().isTermsAccepted.value,
                       onChanged: (val) => Get.find<LoginController>().isTermsAccepted.value = val ?? false,
                           activeColor: const Color(0xFFFF9933),

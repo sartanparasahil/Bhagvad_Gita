@@ -13,7 +13,7 @@ class HomeScreen extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     final SettingsController settingsController = Get.find<SettingsController>();
-  
+
     String getAppTitle() {
       if (settingsController.selectedLanguage.value == 'english') {
         return 'Bhagavad Gita';
@@ -94,57 +94,57 @@ class HomeScreen extends GetView<HomeController> {
         children: [
           Container(
             height: Get.height,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [AppTheme.lightCream, AppTheme.pureWhite],
-              ),
-            ),
-            child: SafeArea(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppTheme.lightCream, AppTheme.pureWhite],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                children: [
                       // Header
-                      Container(
+                  Container(
                         padding: EdgeInsets.all(20),
-                        decoration: BoxDecoration(
+                    decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
+                      boxShadow: [
+                        BoxShadow(
                               color: AppTheme.darkBrown.withOpacity(0.1),
                               blurRadius: 10,
                               offset: const Offset(0, 5),
-                            ),
-                          ],
                         ),
+                      ],
+                    ),
                         child: Row(
                           children: [
                             Icon(
-                              Icons.auto_stories,
+                      Icons.auto_stories,
                               color: AppTheme.primarySaffron,
                               size: 30,
-                            ),
+                    ),
                             SizedBox(width: 15),
-                            Obx(() => Text(
-                              getAppTitle(),
+                  Obx(() => Text(
+                    getAppTitle(),
                               style: TextStyle(
                                 color: AppTheme.darkBrown,
                                 fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )),
                           ],
-                        ),
-                      ),
+                    ),
+                  ),
                       SizedBox(height: 30),
-
+                  
                       // Welcome Card
-                      Container(
+                  Container(
                         padding: EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -161,89 +161,89 @@ class HomeScreen extends GetView<HomeController> {
                             width: 1,
                           ),
                         ),
-                        child: Column(
+                    child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              children: [
+                      children: [
                                 Icon(
                                   Icons.lightbulb_outline,
                                   color: AppTheme.primarySaffron,
                                   size: 28,
                                 ),
                                 SizedBox(width: 12),
-                                Obx(() => Text(
-                                  getWelcomeTitle(),
+                        Obx(() => Text(
+                          getWelcomeTitle(),
                                   style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
-                                    color: AppTheme.spiritualBlue,
+                            color: AppTheme.spiritualBlue,
                                     fontFamily: 'Montserrat',
-                                  ),
-                                )),
+                          ),
+                        )),
                               ],
                             ),
                             SizedBox(height: 16),
-                            Obx(() => Text(
-                              getWelcomeMessage(),
+                        Obx(() => Text(
+                          getWelcomeMessage(),
                               style: TextStyle(
-                                fontSize: 16,
-                                color: AppTheme.darkBrown,
-                                height: 1.6,
+                            fontSize: 16,
+                            color: AppTheme.darkBrown,
+                            height: 1.6,
                                 fontFamily: 'Montserrat',
-                              ),
-                              textAlign: TextAlign.center,
-                            )),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      
-                      // Start Reading Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            Get.toNamed('/chapters');
-                          },
-                          icon: const Icon(Icons.menu_book, size: 24),
-                          label: Obx(() => Text(
-                            getStartReadingText(),
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.pureWhite,
-                            ),
-                          )),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primarySaffron,
-                            foregroundColor: AppTheme.pureWhite,
-                            elevation: 8,
-                            shadowColor: AppTheme.primarySaffron.withOpacity(0.3),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
                           ),
+                          textAlign: TextAlign.center,
+                        )),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  // Start Reading Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Get.toNamed('/chapters');
+                      },
+                      icon: const Icon(Icons.menu_book, size: 24),
+                      label: Obx(() => Text(
+                        getStartReadingText(),
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.pureWhite,
+                        ),
+                      )),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primarySaffron,
+                        foregroundColor: AppTheme.pureWhite,
+                        elevation: 8,
+                        shadowColor: AppTheme.primarySaffron.withOpacity(0.3),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      
-                      // Quick Info
-                      Obx(() => Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildInfoCard('18', getChaptersText(), Icons.book),
-                          _buildInfoCard('700', getVersesText(), Icons.auto_stories),
-                          _buildInfoCard('1', getWisdomText(), Icons.lightbulb),
-                        ],
-                      )),
-                      const SizedBox(height: 20),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 24),
+                  
+                  // Quick Info
+                  Obx(() => Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildInfoCard('18', getChaptersText(), Icons.book),
+                      _buildInfoCard('700', getVersesText(), Icons.auto_stories),
+                      _buildInfoCard('1', getWisdomText(), Icons.lightbulb),
+                    ],
+                  )),
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
+          ),
+        ),
           ),
           // Fixed bottom banner ad
           Positioned(
